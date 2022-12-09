@@ -1,6 +1,6 @@
 const Logo = () => {
   return (
-    <div className="text-2xl text-green-600">
+    <div className="text-2xl text-white">
       CodeType
     </div>
   )
