@@ -18,7 +18,7 @@ const Header = () => {
           <Info />
         </div>
       </div>
-      <div id="RightHeader" className="border-white rounded-md border-2 flex gap-1 items-center ml-40 mr-0 h-12" p-2>
+      <div id="RightHeader" className="border-white rounded-md border-2 flex gap-1 items-center ml-40 mr-0 h-12 p-2">
         <Avatar />
         <Login />
       </div>
