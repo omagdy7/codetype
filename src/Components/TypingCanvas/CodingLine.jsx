@@ -2,8 +2,9 @@ import Letter from "./Letter";
 import Tab from "./Tab";
 import Space from "./Space";
 
-const CodingLine = ({ line, indent, colored }) => {
+const CodingLine = ({ line, indent, right , color}) => {
   const words = line.split('');
+  let toColor = ""
   return (
     <span className="flex leading-0 h-8">
       <Tab indent={indent} />
@@ -13,7 +14,7 @@ const CodingLine = ({ line, indent, colored }) => {
             return (
             <>
               <Space ch={ch} />
-              <Letter letter={ch} color={idx < colored ? "text-green-500" : "text-gray-500"} />
+              <Letter letter={ch} color={idx < right ? color : "text-gray-500"} />
             </>
             )
           })
