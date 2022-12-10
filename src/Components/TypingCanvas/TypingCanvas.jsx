@@ -4,8 +4,8 @@ import Caret from './Caret';
 const TypingCanvas = ({caret, test, color, isFocused}) => {
 
   return (
-    <div className="typing-canvas h-screen">
-      <div className={"h-[95vh] w-1/2 min-w-full border-2 border-white rounded-md ml-auto mr-auto mb-10 p-6 " + (!isFocused ? "blur-none" : "blur-sm")}>
+    <div className="typing-canvas w-1/2 min-w-fit">
+      <div className={"h-[80vh] border-2 border-white rounded-md ml-auto mr-auto p-6 mt-auto mb-auto" + (!isFocused ? "blur-none" : "blur-sm")}>
         <Caret caret={caret} />
         {
           test.map((line) => {

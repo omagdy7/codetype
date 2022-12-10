@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Header from './Components/Header/Header';
 import TypingCanvas from './Components/TypingCanvas/TypingCanvas';
 import Statistics from './Components/Statistics/Statistics';
+import Restart from './Components/Buttons/Restart';
+import AlgorithmsMenu from './Components/AlgorithmsMenu/AlgorithmsMenu';
 import  algorithms from "/src/algorithms_code/algorithms.json";
 import './App.css'
 
@@ -10,22 +12,48 @@ const App = () => {
 
   const WORD_AVERAGE = 5;
 
-  const get_alive = algorithms.get_alive
-  const is_prime = algorithms.is_prime
-  const text = algorithms.normal_text
+  const get_alive = JSON.parse(JSON.stringify(algorithms.get_alive))
+  const text = JSON.parse(JSON.stringify(algorithms.normal_text))
+  const is_prime = JSON.parse(JSON.stringify(algorithms.is_prime))
 
   const [isCanvasFocused, setIsCanvasFocused] = useState(false)
-  const [test, setTest] = useState(text);
+  const [isGameOver, setIsGameOver] = useState(false)
+  const [start, setStart] = useState(false)
+  const [test, setTest] = useState(is_prime);
   const [curLineIdx, setCurLineIdx] = useState(0);
   const [caret, setCaret] = useState({ posX: 0, posY: 1.5 });
   const [color, setColor] = useState("text-green-500");
   const [charsRight, setCharsRight] = useState(0);
   const [charsWrong, setCharsWrong] = useState(0);
-  const [totalChars, setTotalChars] = useState(1);
+  const [totalChars, setTotalChars] = useState(0);
   const [wpm, setWpm] = useState(1);
-  const [timeElapsed, setTimeElapsed] = useState(1);
+  const firstStart = useRef(true);
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const tick = useRef();
   const [acc, setAcc] = useState(100);
 
+  const getTotalChars = (test) => {
+    let totChars = 0;
+    test.forEach(element => {
+      totChars += element.line.length
+    });
+    return totChars
+  }
+
+
+  const restart = () => {
+    const newCaret = { posX: 0, posY: 1.5 }
+    setStart(false)
+    setCaret({...newCaret})
+    setCharsRight(0)
+    setCharsWrong(0)
+    setTotalChars(1)
+    setWpm(1)
+    setTimeElapsed(0)
+    setAcc(100)
+    setTest(() => [...is_prime])
+    setCurLineIdx(0)
+  }
   const handleBackSpace = () => {
     clickingSound.play();
     const newLine = test[curLineIdx];
@@ -34,7 +62,7 @@ const App = () => {
     newLines[curLineIdx].right = newLine.right;
     const newCaretPos = { posX: caret.posX - 0.85, posY: caret.posY }
     setCaret({ ...newCaretPos })
-    setTest([...newLines]);
+    setTest(() => [...newLines]);
   }
 
   const handleWrongInput = (key) => {
@@ -45,6 +73,9 @@ const App = () => {
   }
 
   const handleCorrectInput = (key) => {
+    if (firstStart) {
+      setStart(true)
+    }
     setCharsRight((charsRight) => charsRight + 1)
     setColor("text-green-500")
     clickingSound.play();
@@ -54,7 +85,7 @@ const App = () => {
     setCaret({ ...newCaretPos })
     const newLines = test;
     newLines[curLineIdx].right = newLine.right;
-    setTest([...newLines]);
+    setTest(() => [...newLines]);
   }
 
   const handleUpdateToNextLine = () => {
@@ -79,6 +110,19 @@ const App = () => {
     }
   }
 
+  const onIsPrimeClick = () => {
+    setTest(is_prime)
+  }
+
+  const onNormalTextClick = () => {
+    setTest(text)
+  }
+
+  const onGetAliveClick = () => {
+    setTest(get_alive)
+  }
+
+
   useEffect(() => {
     window.addEventListener('keydown', handleTest);
 
@@ -88,36 +132,54 @@ const App = () => {
   }, [test, curLineIdx]);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setTimeElapsed((timeElapsed) => timeElapsed + 1)
-    },1000);
+    if (firstStart.current) {
+      firstStart.current = !firstStart.current;
+      return;
+    }
+
+    if (start) {
+        tick.current = setInterval(() => {
+          setTimeElapsed((timeElapsed) => timeElapsed + 1)
+      },1000);
+    } else {
+      clearInterval(tick.current)
+    }
 
     return () => {
-      clearInterval(id);
+      clearInterval(tick.current);
     };
-  }, [])
+  }, [start])
 
 
 
   useEffect(() => {
-    setWpm(Math.floor((((charsRight / WORD_AVERAGE) / timeElapsed) * 60)))
+    setWpm(Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeElapsed)))
     setAcc(Math.floor(100 - (charsWrong / totalChars) * 100))
 
     return () => {
     };
   }, [timeElapsed])
 
+  useEffect(() => {
+    if (charsRight == getTotalChars(test)) {
+      setStart(false)
+    }
+  }, [charsRight])
+
 
   return (
-    <div className="App h-screen">
+    <div className="App">
       <div className="Header">
         <Header />
       </div>
       <main className="main flex justify-around mt-10">
-        <Statistics wpm={wpm} timeElapsed={timeElapsed} acc={acc}/>
+        <AlgorithmsMenu onPrimeClick={onIsPrimeClick} onNormalTextClick={onNormalTextClick} onGetAliveCLick={onGetAliveClick}/>
         <TypingCanvas caret={caret} test={test} color={color} isFocused={isCanvasFocused}/>
         <Statistics wpm={wpm} timeElapsed={timeElapsed} acc={acc}/>
       </main>
+      <div className='text-center mt-5'>
+        <Restart onClick={restart}/>
+      </div>
     </div>
   )
 }
