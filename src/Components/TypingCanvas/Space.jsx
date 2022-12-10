@@ -1,6 +1,6 @@
 const Space = ({ ch }) => {
   return (
-    ch == ' ' ? (<span>&nbsp;&nbsp;&nbsp;</span>) : <span></span>
+    ch == ' ' ? (<span className="space">&nbsp;&nbsp;&nbsp;</span>) : <span className="empty"></span>
   )
 }
 

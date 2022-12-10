@@ -6,7 +6,7 @@ const Letter = ({ letter , color }) => {
     textShadow = "107_114_128_"
   }
   return (
-    <span className={"font-code text-2xl [text-shadow:_0_1px_4px_rgb(" + textShadow + "/_100%)] " + color } > { letter } </span>
+    <span className={"letter font-code text-2xl [text-shadow:_0_2px_4px_rgb(" + textShadow + "/_100%)] " + color } > { letter } </span>
   )
 }
 
