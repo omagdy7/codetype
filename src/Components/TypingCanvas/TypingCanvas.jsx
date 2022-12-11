@@ -1,17 +1,25 @@
 import CodingLine from "./CodingLine";
 import Caret from './Caret';
+import { useContext } from "react";
+import { RaceContext } from '../../Contexts/Contexts';
+import { ColorContext } from '../../Contexts/Contexts';
+import { CaretContext } from '../../Contexts/Contexts';
 
-const TypingCanvas = ({caret, test, color, isFocused}) => {
+const TypingCanvas = () => {
+
+  const race = useContext(RaceContext)
+  const caret = useContext(CaretContext)
+  const color = useContext(ColorContext)
 
   return (
     <div className="typing-canvas w-1/2 min-w-fit">
-      <div className={"h-[80vh] border-2 border-white rounded-md ml-auto mr-auto p-6 mt-auto mb-auto" + (!isFocused ? "blur-none" : "blur-sm")}>
+      <div className={"h-[80vh] border-2 border-cyan-500 rounded-md ml-auto mr-auto p-6 mt-auto mb-auto"}>
         <Caret caret={caret} />
         {
-          test.map((line) => {
+          race.test.map((line) => {
             return (
               <div>
-                <CodingLine line={line.line} indent={line.indent} right={line.right} color={color}/>
+              <CodingLine line={line} color={color}/>
               </div>
             )
           })

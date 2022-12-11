@@ -1,8 +1,13 @@
 import StatisticsCard from "./StaisticsCard"
+import { StatsContext } from "../../Contexts/Contexts";
+import { useContext } from "react";
 
-const Statistics = ({wpm, timeElapsed, acc}) => {
+const Statistics = () => {
+
+  const stats = useContext(StatsContext)
+
   return (
-    <StatisticsCard wpm={wpm} timeElapsed={timeElapsed} acc={acc}/>
+    <StatisticsCard wpm={stats.wpm} timeElapsed={stats.timeElapsed} acc={stats.acc}/>
   )
 }
 

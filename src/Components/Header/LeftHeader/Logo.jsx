@@ -1,8 +1,11 @@
+import logo from '../../../assets/icons/codeType.png'
+
 const Logo = () => {
   return (
-    <div className="text-2xl text-white">
-      CodeType
-    </div>
+    <>
+      <img src={logo} width={24} height={24}/>
+      <span className="text-2xl text-white">CodeType</span>
+    </>
   )
 }
 

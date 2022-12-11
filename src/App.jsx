@@ -1,60 +1,65 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, createContext } from 'react'
 import Header from './Components/Header/Header';
 import TypingCanvas from './Components/TypingCanvas/TypingCanvas';
 import Statistics from './Components/Statistics/Statistics';
 import Restart from './Components/Buttons/Restart';
 import AlgorithmsMenu from './Components/AlgorithmsMenu/AlgorithmsMenu';
-import  algorithms from "/src/data/algorithms.json";
-import  topWords from "/src/data/top_english_words.json";
+import algorithms from "/src/data/algorithms.json";
+import topWords from "/src/data/top_english_words.json";
+import { RaceContext } from './Contexts/Contexts';
+import { ColorContext } from './Contexts/Contexts';
+import { CaretContext } from './Contexts/Contexts';
+import { StatsContext } from './Contexts/Contexts';
+import { generateARandomTest } from './utils/generateRandomTest';
 import './App.css'
 
 const App = () => {
   const clickingSound = new Audio("/src/assets/audios/nkCream.wav")
 
+
   const WORD_AVERAGE = 5;
 
+  /* our data */
   const topThousandWords = JSON.parse(JSON.stringify(topWords))
   const get_alive = JSON.parse(JSON.stringify(algorithms.get_alive))
   const is_prime = JSON.parse(JSON.stringify(algorithms.is_prime))
 
-
-  const generateARandomTest = (topThousandWords, lines, wordsPerLine) => {
-    const randomTest = []
-    for (let i = 0; i < lines; i++) {
-      let newLine = ""
-      for (let j = 0; j < wordsPerLine ; j++) {
-        if (j == wordsPerLine - 1) {
-          newLine += topThousandWords.topOneThousand[Math.floor(Math.random() * 1000)]
-        } else {
-          newLine += topThousandWords.topOneThousand[Math.floor(Math.random() * 1000)] + " "
-        }
-      }
-      const randomLine = {
-        line: newLine,
-        indent: 0,
-        right: 0,
-        number: i + 1
-      }
-      randomTest.push(randomLine)
+  const intialStatsState = {
+    wpm: 1,
+    timeElapsed: 1,
+    acc: 100,
+    charsStats: {
+      charsRight: 0,
+      charsWrong: 0,
+      charsTotal: 1
     }
-    return randomTest;
   }
 
-  const [isCanvasFocused, setIsCanvasFocused] = useState(false)
+  const initialCaretPos = { posX: 0, posY: 1.5 }
+
+  const intialRaceState = {
+    test: generateARandomTest(topThousandWords, 3, 11),
+    curLineIdx: 0
+  }
+
+
+
+
+  /* App states */
   const [start, setStart] = useState(false)
-  const [test, setTest] = useState(generateARandomTest(topThousandWords, 3, 11));
-  const [curLineIdx, setCurLineIdx] = useState(0);
-  const [caret, setCaret] = useState({ posX: 0, posY: 1.5 });
+  const [race, setRace] = useState(intialRaceState);
+  const [caret, setCaret] = useState(initialCaretPos);
   const [color, setColor] = useState("text-green-500");
+  const [stats, setStats] = useState(intialStatsState);
+  const [timeInSeconds, setTimeInSeconds] = useState(0);
   const [charsRight, setCharsRight] = useState(0);
   const [charsWrong, setCharsWrong] = useState(0);
-  const [totalChars, setTotalChars] = useState(0);
-  const [wpm, setWpm] = useState(1);
+  const [charsTotal, setCharsTotal] = useState(0);
   const firstStart = useRef(true);
-  const [timeElapsed, setTimeElapsed] = useState(0);
+  /* const timeInSeconds = useRef(0); */
   const tick = useRef();
-  const [acc, setAcc] = useState(100);
 
+  /* gets the total chars of the provided tets */
   const getTotalChars = (test) => {
     let totChars = 0;
     test.forEach(element => {
@@ -64,35 +69,43 @@ const App = () => {
   }
 
 
+  // default: increase both right and cur
+  // if i am deleting and cur > right then don't decrease cur
+  // only decrease right when Backspace if right == cur
+  // I need to keep track of the first wrong char
+  // wordRightSoFar oh no Wrong word
+  // |______________||___________|
+  //       right   wrong         cur
 
-  const restart = () => {
-    const newCaret = { posX: 0, posY: 1.5 }
-    setStart(false)
-    setCaret({...newCaret})
-    setCharsRight(0)
-    setCharsWrong(0)
-    setTotalChars(1)
-    setWpm(1)
-    setTimeElapsed(0)
-    setAcc(100)
-    setTest(() => [...generateARandomTest(topThousandWords, 3, 11)])
-    setCurLineIdx(0)
-  }
-  const handleBackSpace = () => {
+  /* test handling */
+  const handleBackSpace = (key) => {
     clickingSound.play();
-    const newLine = test[curLineIdx];
-    newLine.right--;
-    const newLines = test;
-    newLines[curLineIdx].right = newLine.right;
-    const newCaretPos = { posX: caret.posX - 0.85, posY: caret.posY }
+    const newLine = race.test[race.curLineIdx];
+    if (newLine.right == newLine.current) {
+      newLine.current = Math.max(0, newLine.current - 1);
+      newLine.right = Math.max(0, newLine.right - 1);
+    } else {
+      newLine.current = Math.max(0, newLine.current - 1);
+    }
+    const newLines = race;
+    newLines.test[race.curLineIdx].right = newLine.right;
+    const newCaretPos = (key == " ") ? { posX: Math.max(caret.posX - 0.85, 0), posY: caret.posY } : { posX: Math.max(caret.posX - 0.88, 0), posY: caret.posY }
     setCaret({ ...newCaretPos })
-    setTest(() => [...newLines]);
+    setRace({ ...newLines });
   }
 
   const handleWrongInput = (key) => {
     if (key != "Shift") {
-      setColor("text-red-500")
-      setCharsWrong((charsWrong) => charsWrong + 1)
+      const newLine = race.test[race.curLineIdx];
+      newLine.current++;
+      const newLines = race;
+      newLines.test[race.curLineIdx].line = newLine.line
+      setRace({ ...newLines });
+      setWrongInputIdx(race.test[race.curLineIdx].right + 1)
+      const newCaretPos = (key == " ") ? { posX: caret.posX + 0.85, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
+      setCaret({ ...newCaretPos })
+      setCharsWrong((ch) => ch + 1)
+      setRace({ ...race, })
     }
   }
 
@@ -100,32 +113,41 @@ const App = () => {
     if (firstStart) {
       setStart(true)
     }
-    setCharsRight((charsRight) => charsRight + 1)
-    setColor("text-green-500")
+    setWrongInputIdx(null)
     clickingSound.play();
-    const newLine = test[curLineIdx];
-    newLine.right++;
-    const newCaretPos = (key == " ") ? { posX: caret.posX + 0.80, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
+    setCharsRight((ch) => ch + 1)
+
+    setColor("text-green-500")
+
+    const newCaretPos = (key == " ") ? { posX: caret.posX + 0.85, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
     setCaret({ ...newCaretPos })
-    const newLines = test;
-    newLines[curLineIdx].right = newLine.right;
-    setTest(() => [...newLines]);
+
+    const newLine = race.test[race.curLineIdx];
+    newLine.right++;
+    newLine.current = newLine.right;
+
+    const newLines = race;
+    newLines.test[race.curLineIdx].line = newLine.line
+
+
+    setRace({ ...newLines });
   }
 
   const handleUpdateToNextLine = () => {
-    setCurLineIdx(curLineIdx + 1);
-    const newCaretPos = { posX: test[curLineIdx + 1].indent * 2.5, posY: caret.posY + 2 }
+    console.log(race)
+    setRace({ ...race, curLineIdx: race.curLineIdx + 1 })
+    const newCaretPos = { posX: race.test[race.curLineIdx + 1].indent * 2.5, posY: caret.posY + 2 }
     setCaret({ ...newCaretPos })
   }
 
-
   const handleTest = (e) => {
-    setTotalChars((totalChars) => totalChars + 1)
-    if (test[curLineIdx].right < test[curLineIdx].line.length) {
-      if (e.key == test[curLineIdx].line[test[curLineIdx].right]) {
+    setCharsTotal((ch) => ch + 1)
+    if (race.test[race.curLineIdx].current < race.test[race.curLineIdx].line.length) {
+      const curLine = race.test[race.curLineIdx]
+      if (e.key == curLine.line[curLine.current] && curLine.current == curLine.right) {
         handleCorrectInput(e.key)
       } else if (e.key == "Backspace") {
-        handleBackSpace()
+        handleBackSpace(e.key)
       } else {
         handleWrongInput(e.key)
       }
@@ -134,27 +156,49 @@ const App = () => {
     }
   }
 
+
+  /* Restarting the app to its intial state */
+  const restart = () => {
+    setStart(false)
+    setRace(intialRaceState)
+    setStats(intialStatsState)
+    setCaret(initialCaretPos)
+    setCharsRight(0)
+    setCharsWrong(0)
+    setCharsTotal(0)
+    setTimeInSeconds(0)
+  }
+
+  /* Buttons for different tests*/
   const onIsPrimeClick = () => {
-    setTest(is_prime)
+    setRace({ ...intialRaceState, test: is_prime })
+    setCaret({ ...initialCaretPos })
   }
 
   const onNormalTextClick = () => {
-    setTest(generateARandomTest(topThousandWords, 3, 11))
+    setRace({ ...intialRaceState, test: generateARandomTest(topThousandWords, 3, 11) })
+    setCaret({ ...initialCaretPos })
   }
 
   const onGetAliveClick = () => {
-    setTest(get_alive)
+    setRace({ ...intialRaceState, test: get_alive })
+    setCaret({ ...initialCaretPos })
   }
 
 
+  // adding event handling for keys
   useEffect(() => {
     window.addEventListener('keydown', handleTest);
 
     return () => {
       window.removeEventListener('keydown', handleTest)
     };
-  }, [test, curLineIdx]);
+  }, [race]);
 
+
+
+
+  // Timer for the test
   useEffect(() => {
     if (firstStart.current) {
       firstStart.current = !firstStart.current;
@@ -162,9 +206,9 @@ const App = () => {
     }
 
     if (start) {
-        tick.current = setInterval(() => {
-          setTimeElapsed((timeElapsed) => timeElapsed + 1)
-      },1000);
+      tick.current = setInterval(() => {
+        setTimeInSeconds((t) => t + 1)
+      }, 1000);
     } else {
       clearInterval(tick.current)
     }
@@ -176,19 +220,32 @@ const App = () => {
 
 
 
+  // Providing live statstics
   useEffect(() => {
-    setWpm(Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeElapsed)))
-    setAcc(Math.floor(100 - (charsWrong / totalChars) * 100))
+    setStats({
+      ...stats,
+      timeElapsed: timeInSeconds,
+      wpm: Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeInSeconds)),
+      acc: Math.floor(100 - (charsWrong / charsTotal) * 100)
+    })
 
     return () => {
     };
-  }, [timeElapsed])
+  }, [timeInSeconds])
 
+
+
+  /* Checking if user finished the test */
   useEffect(() => {
-    if (charsRight == getTotalChars(test)) {
+    setStats({
+      ...stats,
+      wpm: Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeInSeconds)),
+      acc: Math.floor(100 - (charsWrong / charsTotal) * 100)
+    })
+    if (charsRight == getTotalChars(race.test)) {
       setStart(false)
     }
-  }, [charsRight])
+  }, [charsRight, charsWrong])
 
 
   return (
@@ -197,12 +254,20 @@ const App = () => {
         <Header />
       </div>
       <main className="main flex justify-around mt-10">
-        <AlgorithmsMenu onPrimeClick={onIsPrimeClick} onNormalTextClick={onNormalTextClick} onGetAliveCLick={onGetAliveClick}/>
-        <TypingCanvas caret={caret} test={test} color={color} isFocused={isCanvasFocused}/>
-        <Statistics wpm={wpm} timeElapsed={timeElapsed} acc={acc}/>
+        <AlgorithmsMenu onPrimeClick={onIsPrimeClick} onNormalTextClick={onNormalTextClick} onGetAliveCLick={onGetAliveClick} />
+        <RaceContext.Provider value={race}>
+          <CaretContext.Provider value={caret}>
+            <ColorContext.Provider value={color}>
+              <TypingCanvas />
+            </ColorContext.Provider>
+          </CaretContext.Provider>
+        </RaceContext.Provider>
+        <StatsContext.Provider value={stats}>
+          <Statistics />
+        </StatsContext.Provider>
       </main>
       <div className='text-center mt-5'>
-        <Restart onClick={restart}/>
+        <Restart onClick={restart} />
       </div>
     </div>
   )

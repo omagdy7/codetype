@@ -11,7 +11,6 @@ const Header = () => {
   return (
     <div className="ml-20 flex justify-between gap-3 mt-5 mr-20">
       <div className="flex justify-items-center gap-3 items-center mr-40">
-        {/* <AlgorithmsMenu /> */}
         <ThreeBarButton />
         <div id="LeftHeader" className="border-white rounded-md border-2 flex justify-items-center gap-3 items-center mr-40 h-12 p-2">
           <Logo />
