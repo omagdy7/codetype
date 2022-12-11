@@ -4,7 +4,8 @@ import TypingCanvas from './Components/TypingCanvas/TypingCanvas';
 import Statistics from './Components/Statistics/Statistics';
 import Restart from './Components/Buttons/Restart';
 import AlgorithmsMenu from './Components/AlgorithmsMenu/AlgorithmsMenu';
-import  algorithms from "/src/algorithms_code/algorithms.json";
+import  algorithms from "/src/data/algorithms.json";
+import  topWords from "/src/data/top_english_words.json";
 import './App.css'
 
 const App = () => {
@@ -12,14 +13,36 @@ const App = () => {
 
   const WORD_AVERAGE = 5;
 
+  const topThousandWords = JSON.parse(JSON.stringify(topWords))
   const get_alive = JSON.parse(JSON.stringify(algorithms.get_alive))
-  const text = JSON.parse(JSON.stringify(algorithms.normal_text))
   const is_prime = JSON.parse(JSON.stringify(algorithms.is_prime))
 
+
+  const generateARandomTest = (topThousandWords, lines, wordsPerLine) => {
+    const randomTest = []
+    for (let i = 0; i < lines; i++) {
+      let newLine = ""
+      for (let j = 0; j < wordsPerLine ; j++) {
+        if (j == wordsPerLine - 1) {
+          newLine += topThousandWords.topOneThousand[Math.floor(Math.random() * 1000)]
+        } else {
+          newLine += topThousandWords.topOneThousand[Math.floor(Math.random() * 1000)] + " "
+        }
+      }
+      const randomLine = {
+        line: newLine,
+        indent: 0,
+        right: 0,
+        number: i + 1
+      }
+      randomTest.push(randomLine)
+    }
+    return randomTest;
+  }
+
   const [isCanvasFocused, setIsCanvasFocused] = useState(false)
-  const [isGameOver, setIsGameOver] = useState(false)
   const [start, setStart] = useState(false)
-  const [test, setTest] = useState(is_prime);
+  const [test, setTest] = useState(generateARandomTest(topThousandWords, 3, 11));
   const [curLineIdx, setCurLineIdx] = useState(0);
   const [caret, setCaret] = useState({ posX: 0, posY: 1.5 });
   const [color, setColor] = useState("text-green-500");
@@ -41,6 +64,7 @@ const App = () => {
   }
 
 
+
   const restart = () => {
     const newCaret = { posX: 0, posY: 1.5 }
     setStart(false)
@@ -51,7 +75,7 @@ const App = () => {
     setWpm(1)
     setTimeElapsed(0)
     setAcc(100)
-    setTest(() => [...is_prime])
+    setTest(() => [...generateARandomTest(topThousandWords, 3, 11)])
     setCurLineIdx(0)
   }
   const handleBackSpace = () => {
@@ -115,7 +139,7 @@ const App = () => {
   }
 
   const onNormalTextClick = () => {
-    setTest(text)
+    setTest(generateARandomTest(topThousandWords, 3, 11))
   }
 
   const onGetAliveClick = () => {
