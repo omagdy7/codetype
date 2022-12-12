@@ -23,6 +23,7 @@ const App = () => {
   const topThousandWords = JSON.parse(JSON.stringify(topWords))
   const get_alive = JSON.parse(JSON.stringify(algorithms.get_alive))
   const is_prime = JSON.parse(JSON.stringify(algorithms.is_prime))
+  const isPalindrome = JSON.parse(JSON.stringify(algorithms.isPalindrome))
 
   const intialStatsState = {
     wpm: 1,
@@ -38,7 +39,7 @@ const App = () => {
   const initialCaretPos = { posX: 0, posY: 1.5 }
 
   const intialRaceState = {
-    test: generateARandomTest(topThousandWords, 3, 11),
+    test: isPalindrome,
     curLineIdx: 0
   }
 
@@ -101,7 +102,6 @@ const App = () => {
       const newLines = race;
       newLines.test[race.curLineIdx].line = newLine.line
       setRace({ ...newLines });
-      setWrongInputIdx(race.test[race.curLineIdx].right + 1)
       const newCaretPos = (key == " ") ? { posX: caret.posX + 0.85, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
       setCaret({ ...newCaretPos })
       setCharsWrong((ch) => ch + 1)
@@ -113,7 +113,6 @@ const App = () => {
     if (firstStart) {
       setStart(true)
     }
-    setWrongInputIdx(null)
     clickingSound.play();
     setCharsRight((ch) => ch + 1)
 
@@ -128,7 +127,6 @@ const App = () => {
 
     const newLines = race;
     newLines.test[race.curLineIdx].line = newLine.line
-
 
     setRace({ ...newLines });
   }
