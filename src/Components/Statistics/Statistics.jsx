@@ -5,7 +5,7 @@ import { useContext } from "react";
 const Statistics = () => {
 
   const stats = useContext(StatsContext)
-
+  
   return (
     <StatisticsCard wpm={stats.wpm} timeElapsed={stats.timeElapsed} acc={stats.acc}/>
   )

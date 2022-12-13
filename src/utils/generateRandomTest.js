@@ -1,5 +1,5 @@
 /* using the first random 1000 english words to generate a random test */
-export const generateARandomTest = (topThousandWords, lines, wordsPerLine) => {
+export const generateRandomTest = (topThousandWords, lines, wordsPerLine) => {
   const randomTest = []
   for (let i = 0; i < lines; i++) {
     let newLine = ""

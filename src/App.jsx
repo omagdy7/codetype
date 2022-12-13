@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, createContext } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Header from './Components/Header/Header';
 import TypingCanvas from './Components/TypingCanvas/TypingCanvas';
 import Statistics from './Components/Statistics/Statistics';
@@ -10,7 +10,8 @@ import { RaceContext } from './Contexts/Contexts';
 import { ColorContext } from './Contexts/Contexts';
 import { CaretContext } from './Contexts/Contexts';
 import { StatsContext } from './Contexts/Contexts';
-import { generateARandomTest } from './utils/generateRandomTest';
+import { useActiveElement } from './hooks/useActiveElement'
+import { generateRandomTest } from './utils/generateRandomTest';
 import './App.css'
 
 const App = () => {
@@ -21,6 +22,7 @@ const App = () => {
 
   /* our data */
   const topThousandWords = JSON.parse(JSON.stringify(topWords))
+  console.log(topThousandWords)
   const get_alive = JSON.parse(JSON.stringify(algorithms.get_alive))
   const is_prime = JSON.parse(JSON.stringify(algorithms.is_prime))
   const isPalindrome = JSON.parse(JSON.stringify(algorithms.isPalindrome))
@@ -48,6 +50,8 @@ const App = () => {
 
   /* App states */
   const [start, setStart] = useState(false)
+  const activeElement = useActiveElement()
+  const [isTypingCanvasFocused, setIsTypingCanvasFocused] = useState(true)
   const [race, setRace] = useState(intialRaceState);
   const [caret, setCaret] = useState(initialCaretPos);
   const [color, setColor] = useState("text-green-500");
@@ -97,6 +101,7 @@ const App = () => {
 
   const handleWrongInput = (key) => {
     if (key != "Shift") {
+      clickingSound.play();
       const newLine = race.test[race.curLineIdx];
       newLine.current++;
       const newLines = race;
@@ -113,6 +118,11 @@ const App = () => {
     if (firstStart) {
       setStart(true)
     }
+
+    if(key == "Tab") {
+      return
+    }
+
     clickingSound.play();
     setCharsRight((ch) => ch + 1)
 
@@ -165,6 +175,7 @@ const App = () => {
     setCharsWrong(0)
     setCharsTotal(0)
     setTimeInSeconds(0)
+    setIsTypingCanvasFocused(true)
   }
 
   /* Buttons for different tests*/
@@ -174,7 +185,7 @@ const App = () => {
   }
 
   const onNormalTextClick = () => {
-    setRace({ ...intialRaceState, test: generateARandomTest(topThousandWords, 3, 11) })
+    setRace({ ...intialRaceState, test: generateRandomTest(topThousandWords, 3, 11) })
     setCaret({ ...initialCaretPos })
   }
 
@@ -192,6 +203,11 @@ const App = () => {
       window.removeEventListener('keydown', handleTest)
     };
   }, [race]);
+
+  useEffect(() => {
+    setIsTypingCanvasFocused(activeElement.id == "typing-canvas")
+
+  },[activeElement])
 
 
 
@@ -223,8 +239,6 @@ const App = () => {
     setStats({
       ...stats,
       timeElapsed: timeInSeconds,
-      wpm: Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeInSeconds)),
-      acc: Math.floor(100 - (charsWrong / charsTotal) * 100)
     })
 
     return () => {
@@ -256,7 +270,7 @@ const App = () => {
         <RaceContext.Provider value={race}>
           <CaretContext.Provider value={caret}>
             <ColorContext.Provider value={color}>
-              <TypingCanvas />
+              <TypingCanvas isFocused={isTypingCanvasFocused}/>
             </ColorContext.Provider>
           </CaretContext.Provider>
         </RaceContext.Provider>
