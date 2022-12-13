@@ -3,7 +3,7 @@ import Tab from "./Tab";
 import Space from "./Space";
 
 const CodingLine = ({ line, color }) => {
-  const words = line.line.split('');
+  const words = line.content.split('');
   return (
     <span className="flex leading-0 h-8">
       <Tab indent={line.indent} />
@@ -11,9 +11,9 @@ const CodingLine = ({ line, color }) => {
         {
           words.map((ch, idx) => {
             let toColor = ""
-            if (idx < line.right) {
+            if (idx < line.correct_so_far) {
               toColor = color 
-            } else if (idx >= line.right && idx < line.current) {
+            } else if (idx >= line.correct_so_far && idx < line.current_idx) {
               toColor = "text-red-500"
             } else {
               toColor = "text-gray-500"

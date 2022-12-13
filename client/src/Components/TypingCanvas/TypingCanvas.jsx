@@ -12,22 +12,25 @@ const TypingCanvas = ({ isFocused }) => {
   const color = useContext(ColorContext)
 
 
-  return (
-    <div tabIndex={0} id="typing-canvas" className="w-1/2 min-w-fit">
-      <div className={"h-[80vh] border-2 border-cyan-500 rounded-md ml-auto mr-auto p-6 mt-auto mb-auto" + (!isFocused ? " blur-sm" : "")}>
-        <Caret caret={caret} />
-        {
-          race.test.map((line) => {
-            return (
-              <div>
-              <CodingLine line={line} color={color}/>
-              </div>
-            )
-          })
-        }
+  if (race) {
+    return (
+      <div tabIndex={0} id="typing-canvas" className="w-1/2 min-w-fit">
+        <div className={"h-[80vh] border-2 border-cyan-500 rounded-md ml-auto mr-auto p-6 mt-auto mb-auto" + (!isFocused ? " blur-sm" : "")}>
+          <Caret caret={caret} />
+          {
+            race.lines.map((line) => {
+              return (
+                <div>
+                  <CodingLine line={line} color={color} />
+                </div>
+              )
+            })
+          }
+        </div>
       </div>
-    </div>
-  )
+    )
+
+  }
 }
 
 export default TypingCanvas;

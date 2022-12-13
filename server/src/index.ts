@@ -3,6 +3,9 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose'
 import Account from './models/Account';
 import { config } from "dotenv"
+import { createRaceContoller } from './controllers/createRaceController'
+import { getRacesController } from './controllers/getRacesController'
+import cors from 'cors';
 
 config()
 
@@ -18,6 +21,7 @@ mongoose.connect(
 const app = express()
 
 app.use(express.json())
+app.use(cors())
 
 app.post("/account", async (req: Request, res: Response) => {
   const newAccount = new Account({
@@ -26,6 +30,11 @@ app.post("/account", async (req: Request, res: Response) => {
   const createdAccount = await newAccount.save()
   res.json(createdAccount)
 })
+
+
+app.get("/", getRacesController)
+
+app.post("/", createRaceContoller)
 
 
 app.get("/", (_: Request, res: Response) => {

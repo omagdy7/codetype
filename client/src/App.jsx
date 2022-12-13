@@ -4,8 +4,6 @@ import TypingCanvas from './Components/TypingCanvas/TypingCanvas';
 import Statistics from './Components/Statistics/Statistics';
 import Restart from './Components/Buttons/Restart';
 import AlgorithmsMenu from './Components/AlgorithmsMenu/AlgorithmsMenu';
-import algorithms from "/src/data/algorithms.json";
-import topWords from "/src/data/top_english_words.json";
 import { RaceContext } from './Contexts/Contexts';
 import { ColorContext } from './Contexts/Contexts';
 import { CaretContext } from './Contexts/Contexts';
@@ -17,15 +15,19 @@ import './App.css'
 const App = () => {
   const clickingSound = new Audio("/src/assets/audios/nkCream.wav")
 
+  const [race, setRace] = useState([{}]);
 
   const WORD_AVERAGE = 5;
 
-  /* our data */
-  const topThousandWords = JSON.parse(JSON.stringify(topWords))
-  console.log(topThousandWords)
-  const get_alive = JSON.parse(JSON.stringify(algorithms.get_alive))
-  const is_prime = JSON.parse(JSON.stringify(algorithms.is_prime))
-  const isPalindrome = JSON.parse(JSON.stringify(algorithms.isPalindrome))
+  useEffect(() => {
+    async function fetchRace() {
+      const respone = await fetch("http://localhost:5000/")
+      const newRaces = await respone.json()
+      setRace(newRaces[0])
+    }
+    fetchRace()
+  }, [])
+
 
   const intialStatsState = {
     wpm: 1,
@@ -40,19 +42,12 @@ const App = () => {
 
   const initialCaretPos = { posX: 0, posY: 1.5 }
 
-  const intialRaceState = {
-    test: isPalindrome,
-    curLineIdx: 0
-  }
-
-
 
 
   /* App states */
   const [start, setStart] = useState(false)
   const activeElement = useActiveElement()
   const [isTypingCanvasFocused, setIsTypingCanvasFocused] = useState(true)
-  const [race, setRace] = useState(intialRaceState);
   const [caret, setCaret] = useState(initialCaretPos);
   const [color, setColor] = useState("text-green-500");
   const [stats, setStats] = useState(intialStatsState);
@@ -66,11 +61,14 @@ const App = () => {
 
   /* gets the total chars of the provided tets */
   const getTotalChars = (test) => {
-    let totChars = 0;
-    test.forEach(element => {
-      totChars += element.line.length
-    });
-    return totChars
+    if(test) {
+      let totChars = 0;
+      test.forEach(element => {
+        totChars += element.content.length
+      });
+      return totChars
+    }
+    return 0;
   }
 
 
@@ -85,15 +83,15 @@ const App = () => {
   /* test handling */
   const handleBackSpace = (key) => {
     clickingSound.play();
-    const newLine = race.test[race.curLineIdx];
-    if (newLine.right == newLine.current) {
-      newLine.current = Math.max(0, newLine.current - 1);
-      newLine.right = Math.max(0, newLine.right - 1);
+    const newLine = race.lines[race.cur_line_idx];
+    if (newLine.correct_so_far == newLine.current) {
+      newLine.current_idx = Math.max(0, newLine.current_idx - 1);
+      newLine.correct_so_far = Math.max(0, newLine.correct_so_far - 1);
     } else {
-      newLine.current = Math.max(0, newLine.current - 1);
+      newLine.current_idx = Math.max(0, newLine.current_idx - 1);
     }
     const newLines = race;
-    newLines.test[race.curLineIdx].right = newLine.right;
+    newLines.lines[race.cur_line_idx].correct_so_far = newLine.correct_so_far;
     const newCaretPos = (key == " ") ? { posX: Math.max(caret.posX - 0.85, 0), posY: caret.posY } : { posX: Math.max(caret.posX - 0.88, 0), posY: caret.posY }
     setCaret({ ...newCaretPos })
     setRace({ ...newLines });
@@ -102,10 +100,10 @@ const App = () => {
   const handleWrongInput = (key) => {
     if (key != "Shift") {
       clickingSound.play();
-      const newLine = race.test[race.curLineIdx];
-      newLine.current++;
+      const newLine = race.lines[race.cur_line_idx];
+      newLine.current_idx++;
       const newLines = race;
-      newLines.test[race.curLineIdx].line = newLine.line
+      newLines.lines[race.cur_line_idx].contents = newLine.content
       setRace({ ...newLines });
       const newCaretPos = (key == " ") ? { posX: caret.posX + 0.85, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
       setCaret({ ...newCaretPos })
@@ -119,7 +117,7 @@ const App = () => {
       setStart(true)
     }
 
-    if(key == "Tab") {
+    if (key == "Tab") {
       return
     }
 
@@ -131,28 +129,29 @@ const App = () => {
     const newCaretPos = (key == " ") ? { posX: caret.posX + 0.85, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
     setCaret({ ...newCaretPos })
 
-    const newLine = race.test[race.curLineIdx];
-    newLine.right++;
-    newLine.current = newLine.right;
+    const newLine = race.lines[race.cur_line_idx];
+    newLine.correct_so_far++;
+    newLine.current_idx = newLine.correct_so_far;
 
     const newLines = race;
-    newLines.test[race.curLineIdx].line = newLine.line
+    newLines.lines[race.cur_line_idx].content = newLine.content
 
     setRace({ ...newLines });
   }
+  
 
   const handleUpdateToNextLine = () => {
-    console.log(race)
-    setRace({ ...race, curLineIdx: race.curLineIdx + 1 })
-    const newCaretPos = { posX: race.test[race.curLineIdx + 1].indent * 2.5, posY: caret.posY + 2 }
+    setRace({ ...race, cur_line_idx: race.cur_line_idx + 1 })
+    const newCaretPos = { posX: race.lines[race.cur_line_idx + 1].indent * 2.5, posY: caret.posY + 2 }
     setCaret({ ...newCaretPos })
   }
 
   const handleTest = (e) => {
     setCharsTotal((ch) => ch + 1)
-    if (race.test[race.curLineIdx].current < race.test[race.curLineIdx].line.length) {
-      const curLine = race.test[race.curLineIdx]
-      if (e.key == curLine.line[curLine.current] && curLine.current == curLine.right) {
+      const curLine = race.lines[race.cur_line_idx]
+
+    if (curLine.current_idx < curLine.content.length) {
+      if (e.key == curLine.content[curLine.current_idx] && curLine.current_idx == curLine.correct_so_far) {
         handleCorrectInput(e.key)
       } else if (e.key == "Backspace") {
         handleBackSpace(e.key)
@@ -207,7 +206,7 @@ const App = () => {
   useEffect(() => {
     setIsTypingCanvasFocused(activeElement.id == "typing-canvas")
 
-  },[activeElement])
+  }, [activeElement])
 
 
 
@@ -254,7 +253,7 @@ const App = () => {
       wpm: Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeInSeconds)),
       acc: Math.floor(100 - (charsWrong / charsTotal) * 100)
     })
-    if (charsRight == getTotalChars(race.test)) {
+    if (charsRight == getTotalChars(race.lines)) {
       setStart(false)
     }
   }, [charsRight, charsWrong])
@@ -270,7 +269,7 @@ const App = () => {
         <RaceContext.Provider value={race}>
           <CaretContext.Provider value={caret}>
             <ColorContext.Provider value={color}>
-              <TypingCanvas isFocused={isTypingCanvasFocused}/>
+              { race.lines ? (<TypingCanvas isFocused={isTypingCanvasFocused}/>) : (<div>Loading</div>)}
             </ColorContext.Provider>
           </CaretContext.Provider>
         </RaceContext.Provider>
