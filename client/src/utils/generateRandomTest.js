@@ -11,12 +11,11 @@ export const generateRandomTest = (topThousandWords, lines, wordsPerLine) => {
       }
     }
     const randomLine = {
-      line: newLine,
+      content: newLine,
       indent: 0,
-      right: 0,
-      current: 0,
-      wrong: 0,
-      number: i + 1
+      correct_so_far: 0,
+      current_idx: 0,
+      line_number: i + 1
     }
     randomTest.push(randomLine)
   }

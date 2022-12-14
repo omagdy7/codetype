@@ -23,23 +23,18 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
-app.post("/account", async (req: Request, res: Response) => {
-  const newAccount = new Account({
-    username: req.body.username,
-  })
-  const createdAccount = await newAccount.save()
-  res.json(createdAccount)
-})
+/* app.post("/account", async (req: Request, res: Response) => { */
+/*   const newAccount = new Account({ */
+/*     username: req.body.username, */
+/*   }) */
+/*   const createdAccount = await newAccount.save() */
+/*   res.json(createdAccount) */
+/* }) */
 
 
 app.get("/", getRacesController)
 
 app.post("/", createRaceContoller)
-
-
-app.get("/", (_: Request, res: Response) => {
-  res.send("I am a server")
-})
 
 app.get("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body
@@ -53,8 +48,3 @@ app.get("/login", async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Password doesn't match!" })
   }
 })
-
-/* app.listen(PORT) */
-//password=WMvkA7W9m0ZstRg6
-
-

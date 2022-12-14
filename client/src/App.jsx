@@ -23,7 +23,7 @@ const App = () => {
     async function fetchRace() {
       const respone = await fetch("http://localhost:5000/")
       const newRaces = await respone.json()
-      setRace(newRaces[0])
+      setRace(newRaces[Math.floor(Math.random() * newRaces.length)])
     }
     fetchRace()
   }, [])
@@ -196,12 +196,14 @@ const App = () => {
 
   // adding event handling for keys
   useEffect(() => {
-    window.addEventListener('keydown', handleTest);
+    if (activeElement.id == "typing-canvas") {
+      window.addEventListener('keydown', handleTest);
+    }
 
     return () => {
       window.removeEventListener('keydown', handleTest)
     };
-  }, [race]);
+  }, [activeElement]);
 
   useEffect(() => {
     setIsTypingCanvasFocused(activeElement.id == "typing-canvas")
