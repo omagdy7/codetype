@@ -2,19 +2,10 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App'
+import ProfilePage from './pages/ProfilePage'
+import SettingsPage from './pages/SettingsPage'
+import AboutPage from './pages/AboutPage'
 import './index.css'
-
-const AboutPage = () => {
-  return (<h1>About</h1>)
-}
-
-const SettingsPage = () => {
-  return (<h1>Settings</h1>)
-}
-
-const ProfilePage = () => {
-  return (<h1>Profile</h1>)
-}
 
 const router = createBrowserRouter([
   {

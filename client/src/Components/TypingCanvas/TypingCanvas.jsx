@@ -11,7 +11,6 @@ const TypingCanvas = ({ isFocused }) => {
   const caret = useContext(CaretContext)
   const color = useContext(ColorContext)
 
-
   if (race) {
     return (
       <div tabIndex={0} id="typing-canvas" className="w-1/2 min-w-fit">

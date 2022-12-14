@@ -12,40 +12,31 @@ import { useActiveElement } from './hooks/useActiveElement'
 import { generateRandomTest } from './utils/generateRandomTest';
 import './App.css'
 
+const TEST_TYPE = {
+  "CODE": 0,
+  "ENGLISH": 1,
+}
+
 const App = () => {
   const clickingSound = new Audio("/src/assets/audios/nkCream.wav")
 
   const [race, setRace] = useState([{}]);
+  const [races, setRaces] = useState([{}])
+
 
   const WORD_AVERAGE = 5;
 
-  useEffect(() => {
-    async function fetchRace() {
-      const respone = await fetch("http://localhost:5000/")
-      const newRaces = await respone.json()
-      setRace(newRaces[Math.floor(Math.random() * newRaces.length)])
-    }
-    fetchRace()
-  }, [])
-
-
   const intialStatsState = {
-    wpm: 1,
-    timeElapsed: 1,
+    wpm: 0,
+    timeElapsed: 0,
     acc: 100,
-    charsStats: {
-      charsRight: 0,
-      charsWrong: 0,
-      charsTotal: 1
-    }
   }
 
   const initialCaretPos = { posX: 0, posY: 1.5 }
 
-
-
   /* App states */
   const [start, setStart] = useState(false)
+  const [testType, setTestType] = useState(TEST_TYPE.CODE)
   const activeElement = useActiveElement()
   const [isTypingCanvasFocused, setIsTypingCanvasFocused] = useState(true)
   const [caret, setCaret] = useState(initialCaretPos);
@@ -61,7 +52,7 @@ const App = () => {
 
   /* gets the total chars of the provided tets */
   const getTotalChars = (test) => {
-    if(test) {
+    if (test) {
       let totChars = 0;
       test.forEach(element => {
         totChars += element.content.length
@@ -108,11 +99,12 @@ const App = () => {
       const newCaretPos = (key == " ") ? { posX: caret.posX + 0.85, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
       setCaret({ ...newCaretPos })
       setCharsWrong((ch) => ch + 1)
-      setRace({ ...race, })
+      setRace({ ...race })
     }
   }
 
   const handleCorrectInput = (key) => {
+    clickingSound.play();
     if (firstStart) {
       setStart(true)
     }
@@ -121,12 +113,13 @@ const App = () => {
       return
     }
 
-    clickingSound.play();
     setCharsRight((ch) => ch + 1)
 
     setColor("text-green-500")
 
+    console.log(caret)
     const newCaretPos = (key == " ") ? { posX: caret.posX + 0.85, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
+    console.log(newCaretPos)
     setCaret({ ...newCaretPos })
 
     const newLine = race.lines[race.cur_line_idx];
@@ -138,7 +131,7 @@ const App = () => {
 
     setRace({ ...newLines });
   }
-  
+
 
   const handleUpdateToNextLine = () => {
     setRace({ ...race, cur_line_idx: race.cur_line_idx + 1 })
@@ -148,14 +141,16 @@ const App = () => {
 
   const handleTest = (e) => {
     setCharsTotal((ch) => ch + 1)
-      const curLine = race.lines[race.cur_line_idx]
-
+    const curLine = race.lines[race.cur_line_idx]
     if (curLine.current_idx < curLine.content.length) {
       if (e.key == curLine.content[curLine.current_idx] && curLine.current_idx == curLine.correct_so_far) {
+        console.log("I am correct")
         handleCorrectInput(e.key)
       } else if (e.key == "Backspace") {
+        console.log("I am deleting")
         handleBackSpace(e.key)
       } else {
+        console.log("I am wrong")
         handleWrongInput(e.key)
       }
     } else {
@@ -166,8 +161,12 @@ const App = () => {
 
   /* Restarting the app to its intial state */
   const restart = () => {
+    if (testType == TEST_TYPE.ENGLISH) {
+      getRandomEnglishTest()
+    } else {
+      getRandomCodeSnippet()
+    }
     setStart(false)
-    setRace(intialRaceState)
     setStats(intialStatsState)
     setCaret(initialCaretPos)
     setCharsRight(0)
@@ -178,21 +177,20 @@ const App = () => {
   }
 
   /* Buttons for different tests*/
-  const onIsPrimeClick = () => {
-    setRace({ ...intialRaceState, test: is_prime })
+  const getRandomEnglishTest = () => {
+    setRace({ lines: generateRandomTest(3, 11), cur_line_idx: 0 })
+    setTestType(TEST_TYPE.ENGLISH)
     setCaret({ ...initialCaretPos })
+    setIsTypingCanvasFocused(true)
   }
 
-  const onNormalTextClick = () => {
-    setRace({ ...intialRaceState, test: generateRandomTest(topThousandWords, 3, 11) })
+  const getRandomCodeSnippet = () => {
+    setTestType(TEST_TYPE.CODE)
+    const randIdx = Math.floor(Math.random() * races.length);
+    setRace({ ...races[randIdx], cur_line_idx: 0 })
     setCaret({ ...initialCaretPos })
+    setIsTypingCanvasFocused(true)
   }
-
-  const onGetAliveClick = () => {
-    setRace({ ...intialRaceState, test: get_alive })
-    setCaret({ ...initialCaretPos })
-  }
-
 
   // adding event handling for keys
   useEffect(() => {
@@ -203,7 +201,7 @@ const App = () => {
     return () => {
       window.removeEventListener('keydown', handleTest)
     };
-  }, [activeElement]);
+  }, [activeElement, race]);
 
   useEffect(() => {
     setIsTypingCanvasFocused(activeElement.id == "typing-canvas")
@@ -240,6 +238,8 @@ const App = () => {
     setStats({
       ...stats,
       timeElapsed: timeInSeconds,
+      /* wpm: Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeInSeconds)), */
+      /* acc: Math.floor(100 - (charsWrong / charsTotal) * 100) */
     })
 
     return () => {
@@ -250,15 +250,29 @@ const App = () => {
 
   /* Checking if user finished the test */
   useEffect(() => {
-    setStats({
-      ...stats,
-      wpm: Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeInSeconds)),
-      acc: Math.floor(100 - (charsWrong / charsTotal) * 100)
-    })
+    if (timeInSeconds > 0) {
+      setStats({
+        ...stats,
+        wpm: Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeInSeconds)),
+        acc: Math.floor(100 - (charsWrong / charsTotal) * 100)
+      })
+    }
     if (charsRight == getTotalChars(race.lines)) {
       setStart(false)
     }
   }, [charsRight, charsWrong])
+
+
+
+  useEffect(() => {
+    async function fetchRace() {
+      const respone = await fetch("http://localhost:5000/")
+      const newRaces = await respone.json()
+      setRaces(newRaces)
+      setRace(newRaces[Math.floor(Math.random() * newRaces.length)])
+    }
+    fetchRace()
+  }, [])
 
 
   return (
@@ -267,11 +281,11 @@ const App = () => {
         <Header />
       </div>
       <main className="main flex justify-around mt-10">
-        <AlgorithmsMenu onPrimeClick={onIsPrimeClick} onNormalTextClick={onNormalTextClick} onGetAliveCLick={onGetAliveClick} />
+        <AlgorithmsMenu onRandomEnglishTestClick={getRandomEnglishTest} onRandomCodeSnippetClick={getRandomCodeSnippet}/>
         <RaceContext.Provider value={race}>
           <CaretContext.Provider value={caret}>
             <ColorContext.Provider value={color}>
-              { race.lines ? (<TypingCanvas isFocused={isTypingCanvasFocused}/>) : (<div>Loading</div>)}
+              {race.lines ? (<TypingCanvas isFocused={isTypingCanvasFocused} />) : (<div>Loading</div>)}
             </ColorContext.Provider>
           </CaretContext.Provider>
         </RaceContext.Provider>
