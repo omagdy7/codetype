@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import Line from './Line';
 
 mongoose.set('strictQuery', true)
 const Schema = mongoose.Schema;

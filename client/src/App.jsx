@@ -4,6 +4,7 @@ import TypingCanvas from './Components/TypingCanvas/TypingCanvas';
 import Statistics from './Components/Statistics/Statistics';
 import Restart from './Components/Buttons/Restart';
 import AlgorithmsMenu from './Components/AlgorithmsMenu/AlgorithmsMenu';
+import Footer from './Components/Footer/Footer';
 import { RaceContext } from './Contexts/Contexts';
 import { ColorContext } from './Contexts/Contexts';
 import { CaretContext } from './Contexts/Contexts';
@@ -142,6 +143,11 @@ const App = () => {
   const handleTest = (e) => {
     setCharsTotal((ch) => ch + 1)
     const curLine = race.lines[race.cur_line_idx]
+    // prevent spacebar from scrolling down when the typing canvas is focused
+    if(e.key == " " && e.target.id == "typing-canvas") {
+      console.log(e.target)
+      e.preventDefault();
+    }
     if (curLine.current_idx < curLine.content.length) {
       if (e.key == curLine.content[curLine.current_idx] && curLine.current_idx == curLine.correct_so_far) {
         console.log("I am correct")
@@ -264,6 +270,7 @@ const App = () => {
 
 
 
+  // get races from database
   useEffect(() => {
     async function fetchRace() {
       const respone = await fetch("http://localhost:5000/")
@@ -296,6 +303,7 @@ const App = () => {
       <div className='text-center mt-5'>
         <Restart onClick={restart} />
       </div>
+      <Footer />
     </div>
   )
 }
