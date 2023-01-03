@@ -5,9 +5,9 @@ const Schema = mongoose.Schema;
 /* const ObjectId = Schema.ObjectId; */
 
 const AccountSchema = new Schema({
-  username: String,
   email: String,
   password: String,
+  createdAt: Date,
 });
 
 const AccountModel = mongoose.model("Account", AccountSchema);

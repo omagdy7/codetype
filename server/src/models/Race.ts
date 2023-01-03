@@ -2,7 +2,6 @@ import mongoose from 'mongoose'
 
 mongoose.set('strictQuery', true)
 const Schema = mongoose.Schema;
-/* const ObjectId = Schema.ObjectId; */
 
 const RaceSchema = new Schema({
   lines: [{
