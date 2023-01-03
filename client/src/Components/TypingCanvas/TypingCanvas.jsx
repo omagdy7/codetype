@@ -13,8 +13,8 @@ const TypingCanvas = ({ isFocused }) => {
 
   if (race) {
     return (
-      <div tabIndex={0} id="typing-canvas" className="w-1/2 min-w-fit">
-        <div className={"h-[80vh] border-2 border-cyan-500 rounded-md ml-auto mr-auto p-6 mt-auto mb-auto" + (!isFocused ? " blur-sm" : "")}>
+      <div tabIndex={0} id="typing-canvas" className="lg:w-1/2 md:w-1/5 min-w-fit">
+        <div className={"h-[70vh] border-2 border-cyan-500 rounded-md ml-auto mr-auto p-6 mt-auto mb-auto" + (!isFocused ? " blur-sm" : "")}>
           <Caret caret={caret} />
           {
             race.lines.map((line) => {

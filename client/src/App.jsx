@@ -33,12 +33,17 @@ const App = () => {
     acc: 100,
   }
 
-  const initialCaretPos = { posX: 0, posY: 1.5 }
+  const CHAR_WIDTH = 0.88
+  const SPACE_WIDTH = 0.85
+  const INDENT_WIDTH = 2.5
+  const LINE_HEIGHT = 2
+  const INTIAL_CARET_Y = 1.5
+  const initialCaretPos = { posX: 0, posY: INTIAL_CARET_Y }
 
   /* App states */
+  const activeElement = useActiveElement()
   const [start, setStart] = useState(false)
   const [testType, setTestType] = useState(TEST_TYPE.CODE)
-  const activeElement = useActiveElement()
   const [isTypingCanvasFocused, setIsTypingCanvasFocused] = useState(true)
   const [caret, setCaret] = useState(initialCaretPos);
   const [color, setColor] = useState("text-green-500");
@@ -48,7 +53,6 @@ const App = () => {
   const [charsWrong, setCharsWrong] = useState(0);
   const [charsTotal, setCharsTotal] = useState(0);
   const firstStart = useRef(true);
-  /* const timeInSeconds = useRef(0); */
   const tick = useRef();
 
   /* gets the total chars of the provided tets */
@@ -84,7 +88,7 @@ const App = () => {
     }
     const newLines = race;
     newLines.lines[race.cur_line_idx].correct_so_far = newLine.correct_so_far;
-    const newCaretPos = (key == " ") ? { posX: Math.max(caret.posX - 0.85, 0), posY: caret.posY } : { posX: Math.max(caret.posX - 0.88, 0), posY: caret.posY }
+    const newCaretPos = (key == " ") ? { posX: Math.max(caret.posX - SPACE_WIDTH, 0), posY: caret.posY } : { posX: Math.max(caret.posX - CHAR_WIDTH, 0), posY: caret.posY }
     setCaret({ ...newCaretPos })
     setRace({ ...newLines });
   }
@@ -97,7 +101,7 @@ const App = () => {
       const newLines = race;
       newLines.lines[race.cur_line_idx].contents = newLine.content
       setRace({ ...newLines });
-      const newCaretPos = (key == " ") ? { posX: caret.posX + 0.85, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
+      const newCaretPos = (key == " ") ? { posX: caret.posX + SPACE_WIDTH, posY: caret.posY } : { posX: caret.posX + CHAR_WIDTH, posY: caret.posY }
       setCaret({ ...newCaretPos })
       setCharsWrong((ch) => ch + 1)
       setRace({ ...race })
@@ -119,7 +123,7 @@ const App = () => {
     setColor("text-green-500")
 
     console.log(caret)
-    const newCaretPos = (key == " ") ? { posX: caret.posX + 0.85, posY: caret.posY } : { posX: caret.posX + 0.88, posY: caret.posY }
+    const newCaretPos = (key == " ") ? { posX: caret.posX + SPACE_WIDTH, posY: caret.posY } : { posX: caret.posX + CHAR_WIDTH, posY: caret.posY }
     console.log(newCaretPos)
     setCaret({ ...newCaretPos })
 
@@ -136,7 +140,7 @@ const App = () => {
 
   const handleUpdateToNextLine = () => {
     setRace({ ...race, cur_line_idx: race.cur_line_idx + 1 })
-    const newCaretPos = { posX: race.lines[race.cur_line_idx + 1].indent * 2.5, posY: caret.posY + 2 }
+    const newCaretPos = { posX: race.lines[race.cur_line_idx + 1].indent * INDENT_WIDTH, posY: caret.posY + LINE_HEIGHT }
     setCaret({ ...newCaretPos })
   }
 
@@ -144,19 +148,16 @@ const App = () => {
     setCharsTotal((ch) => ch + 1)
     const curLine = race.lines[race.cur_line_idx]
     // prevent spacebar from scrolling down when the typing canvas is focused
-    if(e.key == " " && e.target.id == "typing-canvas") {
+    if (e.key == " " && e.target.id == "typing-canvas") {
       console.log(e.target)
       e.preventDefault();
     }
     if (curLine.current_idx < curLine.content.length) {
       if (e.key == curLine.content[curLine.current_idx] && curLine.current_idx == curLine.correct_so_far) {
-        console.log("I am correct")
         handleCorrectInput(e.key)
       } else if (e.key == "Backspace") {
-        console.log("I am deleting")
         handleBackSpace(e.key)
       } else {
-        console.log("I am wrong")
         handleWrongInput(e.key)
       }
     } else {
@@ -184,7 +185,9 @@ const App = () => {
 
   /* Buttons for different tests*/
   const getRandomEnglishTest = () => {
-    setRace({ lines: generateRandomTest(3, 11), cur_line_idx: 0 })
+    const numLines = 3
+    const words = 9
+    setRace({ lines: generateRandomTest(numLines, words), cur_line_idx: 0 })
     setTestType(TEST_TYPE.ENGLISH)
     setCaret({ ...initialCaretPos })
     setIsTypingCanvasFocused(true)
@@ -244,8 +247,6 @@ const App = () => {
     setStats({
       ...stats,
       timeElapsed: timeInSeconds,
-      /* wpm: Math.floor((((charsRight / WORD_AVERAGE) * 60) / timeInSeconds)), */
-      /* acc: Math.floor(100 - (charsWrong / charsTotal) * 100) */
     })
 
     return () => {
@@ -266,6 +267,12 @@ const App = () => {
     if (charsRight == getTotalChars(race.lines)) {
       setStart(false)
     }
+    /* const raceLines = race.lines */
+    /* const curIdx = race.cur_line_idx */
+    /* console.log(raceLines.length, curIdx) */
+    /* if (curIdx == raceLines.length && raceLines[curIdx - 1].content.length == raceLines[curIdx - 1].content.current_idx) { */
+    /*   setStart(false) */
+    /* } */
   }, [charsRight, charsWrong])
 
 
@@ -288,7 +295,7 @@ const App = () => {
         <Header />
       </div>
       <main className="main flex justify-around mt-10">
-        <AlgorithmsMenu onRandomEnglishTestClick={getRandomEnglishTest} onRandomCodeSnippetClick={getRandomCodeSnippet}/>
+        <AlgorithmsMenu onRandomEnglishTestClick={getRandomEnglishTest} onRandomCodeSnippetClick={getRandomCodeSnippet} />
         <RaceContext.Provider value={race}>
           <CaretContext.Provider value={caret}>
             <ColorContext.Provider value={color}>
