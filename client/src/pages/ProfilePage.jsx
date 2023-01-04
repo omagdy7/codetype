@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Header from "../Components/Header/Header";
+import Footer from "../Components/Footer/Footer";
 
 const ProfilePage = () => {
 
@@ -56,8 +57,8 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
-
       </div>
+      <Footer />
     </>
 
   )
