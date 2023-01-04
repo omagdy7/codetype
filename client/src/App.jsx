@@ -33,8 +33,8 @@ const App = () => {
     acc: 100,
   }
 
-  const CHAR_WIDTH = 0.88
-  const SPACE_WIDTH = 0.85
+  const CHAR_WIDTH = 15.5
+  const SPACE_WIDTH = 13.0
   const INDENT_WIDTH = 2.5
   const LINE_HEIGHT = 2
   const INTIAL_CARET_Y = 1.5

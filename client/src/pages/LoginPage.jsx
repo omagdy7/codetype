@@ -1,94 +1,82 @@
 import React, { useEffect, useState } from 'react';
-import Footer from '../Components/Footer/Footer';
-import Header from '../Components/Header/Header';
 
 const LoginPage = () => {
-  /* const [username, setUsername] = useState(''); */
-  /* const [password, setPassword] = useState(''); */
-  /* const [error, setError] = useState(''); */
+  const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
 
-  useEffect(() => {
-    async function fetchLogin() {
-      const response = await fetch("http://localhost:5000/set-cookies", {
-        method: "GET",
-        credentials: "include",
-      })
-      console.log(response)
-    }
-    fetchLogin()
-  }, [])
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+		const response = await fetch('http://localhost:5000/login', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				email,
+				password,
+			}),
+		})
+
+		const data = await response.json()
+    console.log(data)
+
+		if (data !== null) {
+			alert('Login successful')
+		} else {
+			alert('Please check your username and password')
+		}
+
+  };
 
   return (
-    <h1>Hello</h1>
+    <div className="flex items-center justify-center h-screen">
+      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-1/3">
+
+        <div className="text-slate-800 text-3xl mb-4">
+          <h1>Login</h1>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+            Email
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
+            id="email"
+            type="email"
+            placeholder="john@example.com"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-6">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+            Password
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
+            id="password"
+            type="password"
+            placeholder="********"
+            name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="submit"
+          >
+            Sign up
+          </button>
+        </div>
+      </form>
+    </div>
   )
-
-  /* const handleSubmit = (event) => { */
-  /*   event.preventDefault(); */
-  /**/
-  /*   if (username === '' || password === '') { */
-  /*     setError('Please enter a username and password'); */
-  /*     return; */
-  /*   } */
-  /**/
-  /*   // Send a request to the server to authenticate the user */
-  /*   authenticate(username, password) */
-  /*     .then(() => { */
-  /*       // If the authentication is successful, redirect the user */
-  /*       navigateToHomepage(); */
-  /*     }) */
-  /*     .catch((error) => { */
-  /*       setError('There was an error logging in. Please try again.'); */
-  /*     }); */
-  /* }; */
-  /* return ( */
-  /*   <> */
-  /*     <div className="text-center lg:text-left"> */
-  /*       <div className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100"> */
-  /*         <div className="card-body"> */
-  /*           <div className="form-control"> */
-  /*             <label className="label"> */
-  /*               <span className="label-text">Email</span> */
-  /*             </label> */
-  /*             <input type="text" placeholder="email" className="input input-bordered" /> */
-  /*           </div> */
-  /*           <div className="form-control"> */
-  /*             <label className="label"> */
-  /*               <span className="label-text">Password</span> */
-  /*             </label> */
-  /*             <input type="text" placeholder="password" className="input input-bordered" /> */
-  /*             <label className="label"> */
-  /*               <a href="#" className="label-text-alt link link-hover">Forgot password?</a> */
-  /*             </label> */
-  /*           </div> */
-  /*           <div className="form-control mt-6"> */
-  /*             <button className="btn btn-primary">Login</button> */
-  /*           </div> */
-  /*         </div> */
-  /*       </div> */
-  /*     </div> */
-  /*   </> */
-  /* ) */
-
-  /* return ( */
-  /*   <form onSubmit={handleSubmit}> */
-  /*     <label htmlFor="username">Username</label> */
-  /*     <input */
-  /*       type="text" */
-  /*       id="username" */
-  /*       value={username} */
-  /*       onChange={(event) => setUsername(event.target.value)} */
-  /*     /> */
-  /*     <label htmlFor="password">Password</label> */
-  /*     <input */
-  /*       type="password" */
-  /*       id="password" */
-  /*       value={password} */
-  /*       onChange={(event) => setPassword(event.target.value)} */
-  /*     /> */
-  /*     {error && <p>{error}</p>} */
-  /*     <button type="submit">Log in</button> */
-  /*   </form> */
-  /* ); */
 };
 
 export default LoginPage;

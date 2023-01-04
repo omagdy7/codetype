@@ -1,25 +1,60 @@
 import React, { useState } from 'react';
 
+import { useNavigate } from 'react-router-dom'
+
 function SignupForm() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
+  const navigate = useNavigate()
 
-  function handleInputChange(event) {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  }
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     // Submit the form data
+    const response = await fetch('http://localhost:5000/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username,
+        email,
+        password,
+      }),
+    })
+
+    const data = await response.json()
+    console.log(data)
+
+    if (data !== null) {
+      navigate('/login')
+    }
   }
 
   return (
     <div className="flex items-center justify-center h-screen">
       <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-1/3">
+        <div className="text-slate-800 text-3xl mb-4">
+          <h1>Sign up</h1>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+            Username
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
+            id="name"
+            type="text"
+            placeholder="your name"
+            name=""
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
+
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
             Email
@@ -30,8 +65,8 @@ function SignupForm() {
             type="email"
             placeholder="john@example.com"
             name="email"
-            value={formData.email}
-            onChange={handleInputChange}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
@@ -45,8 +80,8 @@ function SignupForm() {
             type="password"
             placeholder="********"
             name="password"
-            value={formData.password}
-            onChange={handleInputChange}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
@@ -59,7 +94,7 @@ function SignupForm() {
           </button>
         </div>
       </form>
-      </div>
+    </div>
   )
 }
 
