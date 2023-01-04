@@ -3,7 +3,7 @@ import Header from './Components/Header/Header';
 import TypingCanvas from './Components/TypingCanvas/TypingCanvas';
 import Statistics from './Components/Statistics/Statistics';
 import Restart from './Components/Buttons/Restart';
-import AlgorithmsMenu from './Components/AlgorithmsMenu/AlgorithmsMenu';
+import OptionsMenu from './Components/OptionsMenu/OptionsMenu';
 import Footer from './Components/Footer/Footer';
 import { RaceContext } from './Contexts/Contexts';
 import { ColorContext } from './Contexts/Contexts';
@@ -22,6 +22,7 @@ const App = () => {
   const clickingSound = new Audio("/src/assets/audios/nkCream.wav")
 
   const [race, setRace] = useState([{}]);
+  const [user, setUser] = useState()
   const [races, setRaces] = useState([{}])
 
 
@@ -122,9 +123,7 @@ const App = () => {
 
     setColor("text-green-500")
 
-    console.log(caret)
     const newCaretPos = (key == " ") ? { posX: caret.posX + SPACE_WIDTH, posY: caret.posY } : { posX: caret.posX + CHAR_WIDTH, posY: caret.posY }
-    console.log(newCaretPos)
     setCaret({ ...newCaretPos })
 
     const newLine = race.lines[race.cur_line_idx];
@@ -267,12 +266,6 @@ const App = () => {
     if (charsRight == getTotalChars(race.lines)) {
       setStart(false)
     }
-    /* const raceLines = race.lines */
-    /* const curIdx = race.cur_line_idx */
-    /* console.log(raceLines.length, curIdx) */
-    /* if (curIdx == raceLines.length && raceLines[curIdx - 1].content.length == raceLines[curIdx - 1].content.current_idx) { */
-    /*   setStart(false) */
-    /* } */
   }, [charsRight, charsWrong])
 
 
@@ -285,17 +278,23 @@ const App = () => {
       setRaces(newRaces)
       setRace(newRaces[Math.floor(Math.random() * newRaces.length)])
     }
+    async function fetchUser() {
+      const respone = await fetch("http://localhost:5000/user")
+      const newUser = await respone.json()
+      setUser(newUser[0])
+    }
     fetchRace()
+    fetchUser()
   }, [])
 
 
   return (
-    <div className="App">
+    <div className="App bg-neutral">
       <div className="Header">
-        <Header />
+        <Header username={user ? user.username : ""}/>
       </div>
       <main className="main flex justify-around mt-10">
-        <AlgorithmsMenu onRandomEnglishTestClick={getRandomEnglishTest} onRandomCodeSnippetClick={getRandomCodeSnippet} />
+        <OptionsMenu onRandomEnglishTestClick={getRandomEnglishTest} onRandomCodeSnippetClick={getRandomCodeSnippet} />
         <RaceContext.Provider value={race}>
           <CaretContext.Provider value={caret}>
             <ColorContext.Provider value={color}>

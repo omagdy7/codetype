@@ -1,8 +1,8 @@
 import mongoose from 'mongoose'
 import { Schema, model, Document } from 'mongoose';
-import Account from './Account'
-import Settings from './Settings';
-import Stats from './Stats';
+import Account from './Schemas/Account'
+import Settings from './Schemas/Settings';
+import Stats from './Schemas/Stats';
 /* import Race from './Race'; */
 
 mongoose.set('strictQuery', true)

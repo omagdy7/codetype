@@ -6,12 +6,9 @@ const SettingsPage = () => {
   const [theme, setTheme] = useState('dark');
   const [difficulty, setDifficulty] = useState('easy')
 
-  const handleThemeChange = (e) => {
-    setTheme(e.target.value);
-  };
 
   return (
-    <>
+    <div className={"page" + (theme == 'light' ? " bg-gray-300" : " bg-neutral")}>
       <Header />
       <div className="container mx-auto px-4 py-6 md:px-6 lg:px-8">
         <h1 className="text-3xl font-bold leading-tight mb-4 text-gray-400 text-center">Settings</h1>
@@ -27,7 +24,7 @@ const SettingsPage = () => {
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }
 

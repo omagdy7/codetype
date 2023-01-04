@@ -4,11 +4,11 @@ import mongoose from 'mongoose'
 import { config } from "dotenv"
 import { createRaceContoller } from './controllers/Routes/Race/createRaceController'
 import { getRacesController } from './controllers/Routes/Race/getRacesController'
-import { createAccountController } from './controllers/Routes/Account/createAccountController';
-import { getAccountController } from './controllers/Routes/Account/getAccountController';
+import { getUserController } from './controllers/Routes/getUserController'
 import { getLoginController } from './controllers/Routes/Login/getLoginController'
 import { createSignUpController } from './controllers/Routes/Signup/createSignUpController'
 import cors from 'cors';
+import { updateUser } from './controllers/Routes/updateUser'
 
 config()
 
@@ -35,17 +35,15 @@ app.use(cors({
 
 app.get("/", getRacesController)
 
+app.get("/user", getUserController)
+
 app.post("/", createRaceContoller)
-
-app.get("/account", getAccountController)
-
-app.post("/account", createAccountController)
 
 app.post("/signup", createSignUpController)
 
 app.post("/login", getLoginController)
 
-/* app.post("/login", createLoginController) */
+app.put('/update-user/:id', updateUser);
 
 
 
