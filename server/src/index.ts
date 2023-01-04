@@ -1,14 +1,15 @@
 import express from 'express'
-import { Request, Response } from 'express';
 import mongoose from 'mongoose'
-import Account from './models/Account';
 import { config } from "dotenv"
-import { createRaceContoller } from './controllers/createRaceController'
-import { getRacesController } from './controllers/getRacesController'
+import { createRaceContoller } from './controllers/Routes/Race/createRaceController'
+import { getRacesController } from './controllers/Routes/Race/getRacesController'
+import { createAccountController } from './controllers/Routes/Account/createAccountController';
+import { getAccountController } from './controllers/Routes/Account/getAccountController';
+import { getLoginController } from './controllers/Routes/Login/getLoginController'
+import { getSingUpController } from './controllers/Routes/Signup/getSignUpController'
 import cors from 'cors';
 
 config()
-
 
 const PORT = 5000;
 
@@ -23,28 +24,20 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
-/* app.post("/account", async (req: Request, res: Response) => { */
-/*   const newAccount = new Account({ */
-/*     username: req.body.username, */
-/*   }) */
-/*   const createdAccount = await newAccount.save() */
-/*   res.json(createdAccount) */
-/* }) */
-
-
 app.get("/", getRacesController)
 
 app.post("/", createRaceContoller)
 
-app.get("/login", async (req: Request, res: Response) => {
-  const { email, password } = req.body
-  const userWithEmail = await (Account.findOne({ $where: email })).catch((err) => console.log("Error: ", err))
+app.get("/account", getAccountController)
 
-  if (!userWithEmail) {
-    return res.status(400).json({ message: "Email or password doesn't match" })
-  }
+app.post("/account", createAccountController)
 
-  if (userWithEmail.password !== password) {
-    return res.status(400).json({ message: "Password doesn't match!" })
-  }
-})
+app.get("/login", getLoginController)
+
+app.post("/login")
+
+app.get("/signup", getSingUpController)
+
+app.post("/signup")
+
+

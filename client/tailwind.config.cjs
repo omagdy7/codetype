@@ -6,7 +6,8 @@ module.exports = {
   ],
   theme: {
     fontFamily: {
-      'code': ['Comic Mono']
+      'code': ['Comic Mono'],
+      'mono': ['courier']
     },
     extend: {},
   },
