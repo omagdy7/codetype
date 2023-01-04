@@ -1,4 +1,5 @@
 import express from 'express'
+import cookieParser from 'cookie-parser'
 import mongoose from 'mongoose'
 import { config } from "dotenv"
 import { createRaceContoller } from './controllers/Routes/Race/createRaceController'
@@ -6,12 +7,13 @@ import { getRacesController } from './controllers/Routes/Race/getRacesController
 import { createAccountController } from './controllers/Routes/Account/createAccountController';
 import { getAccountController } from './controllers/Routes/Account/getAccountController';
 import { getLoginController } from './controllers/Routes/Login/getLoginController'
-import { getSingUpController } from './controllers/Routes/Signup/getSignUpController'
+import { createSignUpController } from './controllers/Routes/Signup/createSignUpController'
 import cors from 'cors';
 
 config()
 
 const PORT = 5000;
+const FRONTEND = 5173;
 
 mongoose.connect(
   process.env.MONGO_URL!
@@ -19,10 +21,17 @@ mongoose.connect(
   console.log("Succssefully connected to database")
   app.listen(PORT)
 })
+
 const app = express()
 
+
+// middlewares
 app.use(express.json())
-app.use(cors())
+app.use(cookieParser())
+app.use(cors({
+  origin : `http://localhost:${FRONTEND}` ,
+  credentials: true, // <= Accept credentials (cookies) sent by the client
+}))
 
 app.get("/", getRacesController)
 
@@ -32,12 +41,12 @@ app.get("/account", getAccountController)
 
 app.post("/account", createAccountController)
 
-app.get("/login", getLoginController)
+app.post("/signup", createSignUpController)
 
-app.post("/login")
+app.post("/login", getLoginController)
 
-app.get("/signup", getSingUpController)
+/* app.post("/login", createLoginController) */
 
-app.post("/signup")
+
 
 

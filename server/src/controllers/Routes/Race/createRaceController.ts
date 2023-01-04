@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import Race from '../models/Race'
+import Race from '../../../models/Race'
 
 export const createRaceContoller = async (req: Request, res: Response) => {
   const newRace = new Race({

@@ -1,14 +1,20 @@
 import mongoose from 'mongoose'
 import { Schema, model, Document } from 'mongoose';
+import Account from './Account'
+import Settings from './Settings';
+import Stats from './Stats';
+/* import Race from './Race'; */
 
 mongoose.set('strictQuery', true)
 
+
 const UserSchema = new Schema({
   username: String,
-  Account: { type: Schema.Types.ObjectId, ref: 'Account'},
-  Settings: { type: Schema.Types.ObjectId, ref: 'Settings'},
-  Stats: { type: Schema.Types.ObjectId, ref: 'Stats'},
-  Races: [{ type: Schema.Types.ObjectId, ref: 'Race'}],
+  account: Account,
+  Account: Account,
+  Settings: Settings,
+  Stats: Stats, 
+  /* Races: [Race], */
 });
 
 const UserModel = model<Document>("User", UserSchema);
